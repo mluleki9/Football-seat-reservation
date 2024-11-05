@@ -1,0 +1,46 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model Users {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique
+  username  String
+  email     String   
+  name      String?
+  createdAt DateTime @default(now())
+  reservations Reservation[] 
+}
+
+model Match {
+  id             Int          @id @default(autoincrement())
+  match_name     String
+  date           DateTime
+  location       String
+  available_slots Int          // Number of available slots for reservation
+  teams          String
+  status         String        // Can be 'available', 'sold out', 'canceled', etc.
+  reservations   Reservation[] // Relation to reservations
+}
+
+model Reservation {
+  id              Int      @id @default(autoincrement())
+  user_id         String   // User's ID from authentication
+  match_id        Int
+  email           String
+  username        String      // Number of seats reserved by the user
+  reservation_date DateTime @default(now())  // Timestamp of the reservation
+  
+  // Relations
+  user            Users     @relation(fields: [user_id], references: [userId])
+  match           Match    @relation(fields: [match_id], references: [id])
+
+  @@index([match_id])
+  @@index([user_id])
+}
